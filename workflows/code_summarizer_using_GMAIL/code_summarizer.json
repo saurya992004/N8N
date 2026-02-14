@@ -1,0 +1,387 @@
+{
+  "name": "code_summarizer",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "steps\n1.read the code related  mail-trigger\n2.summarize the code\n3.add comments to the code\nstep 2 and 3 to be done parallely\n3.merge the out put of 2 and 3\n4.send the output to me as a mail\n",
+        "height": 144,
+        "width": 272
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -592,
+        -256
+      ],
+      "typeVersion": 1,
+      "id": "cbb40132-af47-46d2-aaa9-0af503a085a6",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "simple": false,
+        "filters": {
+          "sender": "sauryatripathi992004@gmail.com"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -448,
+        368
+      ],
+      "id": "0e9c21d7-6293-4ea0-b53c-11f8064c1343",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "hTz6waWU7lsQj1lX",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -152,
+        288
+      ],
+      "id": "c9fad1ab-928d-4257-aeaf-c0b554f09588",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "xWcWDjKPAIL2jH8l",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -152,
+        792
+      ],
+      "id": "5303c239-935f-4f99-a838-e93cfa2b2b83",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "xWcWDjKPAIL2jH8l",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Given the code below\nCode :\n {{ $json.text }}\n\nAnalyze the code for me and add comments to the code so that i can understand the context as well as the what important lines are doing. \nNote: Do not change the code at all.Just add the comments\nIn the end add summary of whole code also ,and basice step(only steps ) to carry forward the code",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are the professional software engineer  who understands the cpp,python and java ver well .Your task is to help me to understand the code"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        -224,
+        64
+      ],
+      "id": "ed2f3a66-bc07-4c4c-8754-736894fe2112",
+      "name": "code_explainer"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Given the code below\nCode :\n {{ $json.text }}\n\nAnalyze the code for me and give me a short roadmap to how to execute that particular task or project ,roadmap should be in proper bullet point and not more than 5 bullet points ,also list the key dependencies required in bullet points\nNote:dont make changes in the code at all",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are the professional software engineer assistant  who understands the cpp,python and java ver well .Your task is to help me to understand the code. You have to make things easy and understandable"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        -224,
+        568
+      ],
+      "id": "3390945c-1150-4685-88aa-313206126f1e",
+      "name": "roadmap"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        128,
+        368
+      ],
+      "id": "35a097b4-3a17-4ad4-974a-cab9e8738b7d",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "text"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        352,
+        368
+      ],
+      "id": "7b4c29b7-3385-4086-b01a-f1e756bb91b4",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "sendTo": "sauryatripathi992004@gmail.com",
+        "subject": "Code with summary and roadmap",
+        "message": "=Code with summary and Roadmap:\n{{ $json.text }}",
+        "options": {
+          "senderName": "Saurya Tripathi"
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1184,
+        368
+      ],
+      "id": "55689e9e-48af-4165-ae22-1454fcc29e71",
+      "name": "Send a message",
+      "webhookId": "eaf9cadb-b2c1-419f-a15d-e37dd39c8421",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "hTz6waWU7lsQj1lX",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e355793b-2a4b-4b76-87a5-1457103d4701",
+              "name": "Message",
+              "value": "=Code summary: \n{{ $json.text[0] }}\n\n\nTask roadmap:\n{{ $json.text[1] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        576,
+        368
+      ],
+      "id": "e6301416-f29e-4913-a5b7-c2101ee9843e",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Conver the message into html format and include proper code block wherever necessary ,the codeblock should have syntax highlighting for the specific language used in the message \nMessage:\n\n{{ $json.Message }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You can convert any message into html format that can be sent to mail of the user"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        800,
+        368
+      ],
+      "id": "51d7bdbf-a612-410a-9d3a-ea56238a1c2e",
+      "name": "code_explainer1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        872,
+        592
+      ],
+      "id": "f01b8515-c475-47da-84c1-9b2c76642446",
+      "name": "Google Gemini Chat Model2",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "xWcWDjKPAIL2jH8l",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "code_explainer",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "roadmap",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "code_explainer",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "roadmap",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "roadmap": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "code_explainer": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        []
+      ]
+    },
+    "Google Gemini Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "code_explainer1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "code_explainer1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "code_explainer1": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "815f77aa-0f0f-4f8b-b558-f5329eb59293",
+  "meta": {
+    "instanceId": "aa08526b503cd36cc55da466f7e56f25872a36e73a06e3a1eb5491dde38c4722"
+  },
+  "id": "ltjhjkfUVaFvGjV4",
+  "tags": []
+}
